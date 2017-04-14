@@ -33,7 +33,7 @@ export default Component.extend({
   sortStoresByDistance() { /* ... */ },
 
   alwaysCancels() {
-    return CANCEL;
+    return CANCEL();
   },
 
   handleCancel(cancellation) {
@@ -49,7 +49,7 @@ export default Component.extend({
         break;
       default:
         // no cancel handler
-        console.log(`last value: ${cancellation.result}`);
+        console.log(`last value: ${cancellation.result}, reason: ${cancellation.reason}`);
         break;
     }
   }),
@@ -92,6 +92,16 @@ export default Component.extend({
 
 ```js
 [step('step1'), step(x => x * x)];
+```
+
+In a `step` function, return `CANCEL()` to abort the pipeline:
+
+```js
+{
+  step1() {
+    return CANCEL('optional reason, can be any type');
+  }
+}
 ```
 
 Then, to run the pipeline, get the reference to it and `perform` it:

@@ -23,7 +23,7 @@ const dummy = {
   step2(v) {
     let value = v + v;
     if (value > 10) {
-      return CANCEL;
+      return CANCEL('Cannot be greater than 5');
     }
     return value;
   },
@@ -33,13 +33,13 @@ const dummy = {
   handleCancel(cancellation) {
     switch (cancellation.fnName) {
       case 'step1':
-        this.result = `cancelled on step1 - last value: ${cancellation.result}`;
+        this.result = `cancelled on step1 - last value: ${cancellation.result}. Reason: ${cancellation.reason}`;
         break;
       case 'step2':
-        this.result = `cancelled on step2 - last value: ${cancellation.result}`;
+        this.result = `cancelled on step2 - last value: ${cancellation.result}. Reason: ${cancellation.reason}`;
         break;
       case 'step3':
-        this.result = `cancelled on step3 - last value: ${cancellation.result}`;
+        this.result = `cancelled on step3 - last value: ${cancellation.result}. Reason: ${cancellation.reason}`;
         break;
       default:
         this.result = 'no cancel handler'
@@ -78,7 +78,7 @@ test('it handles unhappy path', function(assert) {
   assert.equal(spy.callCount, 1);
 
   dummy.calculate(10);
-  assert.equal(dummy.result, 'cancelled on step2 - last value: 10');
+  assert.equal(dummy.result, 'cancelled on step2 - last value: 10. Reason: Cannot be greater than 5');
   assert.equal(spy.callCount, 1, 'should abort chain');
 
   dummy.calculate(1);
@@ -148,16 +148,20 @@ test('it halts reducer when the context object is destroyed', function(assert) {
   let obj = EmberObject.create({
     foo(val) {
       return 'foo' + val;
+    },
+    toString() {
+      return '<dummy>';
     }
   });
   let pipelineInstance = pipeline(obj, [step('foo')]);
   let expectedResult = {
     '@@ember-pipeline/is-cancelled': true,
     fnName: 'foo',
+    reason: '<dummy> destroyed',
     result: undefined
   };
-  run(() => obj.destroy());
   run(() => {
+    obj.destroy();
     assert.deepEqual(pipelineInstance.perform('bar'), expectedResult);
     done();
   });
