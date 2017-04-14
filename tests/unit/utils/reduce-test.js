@@ -14,9 +14,10 @@ test('it short-circuits if it encounters a `CANCEL` token', function(assert) {
   let expectedResult = {
     [IS_CANCELLED_SYMBOL]: true,
     result: 10, // <- last result before cancellation
+    reason: undefined,
     fnName: undefined
   };
-  let fns = [x => x + 1, () => CANCEL, x => x * x];
+  let fns = [x => x + 1, () => CANCEL(), x => x * x];
   let result = reduce(fns, (acc, fn) => fn(acc), 9);
 
   assert.deepEqual(result, expectedResult);
