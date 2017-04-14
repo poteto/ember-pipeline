@@ -1,17 +1,22 @@
 {
   "name": "ember-pipeline",
   "version": "0.0.0",
-  "description": "The default blueprint for ember-cli addons.",
+  "description": "Railway oriented programming in Ember",
   "keywords": [
-    "ember-addon"
+    "ember-addon",
+    "pipeline",
+    "pipe",
+    "railway"
   ],
   "license": "MIT",
-  "author": "",
+  "author": "Lauren Tan <arr@sugarpirate.com>",
   "directories": {
     "doc": "doc",
     "test": "tests"
   },
-  "repository": "",
+  "repository": "https://github.com/poteto/ember-pipeline",
+  "bugs": "https://github.com/poteto/ember-pipeline/issues",
+  "homepage": "https://github.com/poteto/ember-pipeline",
   "scripts": {
     "build": "ember build",
     "start": "ember server",
@@ -37,8 +42,8 @@
     "ember-export-application-global": "^2.0.0",
     "ember-load-initializers": "^1.0.0",
     "ember-resolver": "^4.0.0",
+    "ember-sinon": "^0.7.0",
     "ember-source": "~2.13.0-beta.1",
-    "ember-welcome-page": "^3.0.0",
     "loader.js": "^4.2.3"
   },
   "engines": {
