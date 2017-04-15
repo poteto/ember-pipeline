@@ -1,5 +1,7 @@
-import { typeOf } from 'ember-utils';
-import isObject from './is-object';
+import Ember from 'ember';
+import isObject from 'ember-pipeline/utils/is-object';
+
+const { typeOf } = Ember;
 
 function isPromiseLike(obj = {}) {
   return typeOf(obj.then) === 'function'
@@ -7,5 +9,6 @@ function isPromiseLike(obj = {}) {
 }
 
 export default function isPromise(obj) {
-  return isObject(obj) && isPromiseLike(obj);
+  return isObject(obj)
+    && isPromiseLike(obj);
 }

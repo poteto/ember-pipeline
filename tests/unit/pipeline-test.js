@@ -1,7 +1,7 @@
 import Ember from 'ember';
 import sinon from 'sinon';
 import { pipeline, step, CANCEL } from 'ember-pipeline';
-import { IS_PIPELINE_SYMBOL } from 'ember-pipeline/-symbols';
+import { IS_CANCELLED, IS_PIPELINE } from 'ember-pipeline/-symbols';
 import { module, test } from 'qunit';
 
 let sandbox;
@@ -93,7 +93,7 @@ test('#pipeline returns new pipeline instance', function(assert) {
     }
   };
   let pipelineInstance = pipeline(obj, [step('foo')]);
-  assert.ok(pipelineInstance.get(IS_PIPELINE_SYMBOL));
+  assert.ok(pipelineInstance.get(IS_PIPELINE));
   assert.equal(pipelineInstance.perform('bar'), 'foobar');
 });
 
@@ -154,15 +154,13 @@ test('it halts reducer when the context object is destroyed', function(assert) {
     }
   });
   let pipelineInstance = pipeline(obj, [step('foo')]);
-  let expectedResult = {
-    '@@ember-pipeline/is-cancelled': true,
-    fnName: 'foo',
-    reason: '<dummy> destroyed',
-    result: undefined
-  };
   run(() => {
     obj.destroy();
-    assert.deepEqual(pipelineInstance.perform('bar'), expectedResult);
+    let result = pipelineInstance.perform('bar');
+    assert.ok(result[IS_CANCELLED]);
+    assert.equal(result.fnName, 'foo');
+    assert.equal(result.reason, '<dummy> destroyed');
+    assert.equal(result.reult, undefined);
     done();
   });
 });

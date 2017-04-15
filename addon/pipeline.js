@@ -1,9 +1,8 @@
 import Ember from 'ember';
+import Step from 'ember-pipeline/step';
+import pipe from 'ember-pipeline/-pipe';
+import { IS_CANCELLED, IS_PIPELINE } from 'ember-pipeline/-symbols';
 import isObject from 'ember-pipeline/utils/is-object';
-import pureAssign from 'ember-pipeline/utils/pure-assign';
-import pipe from 'ember-pipeline/utils/pipe';
-import { IS_PIPELINE_SYMBOL } from 'ember-pipeline/-symbols';
-import { IS_CANCELLED_SYMBOL } from 'ember-pipeline/-symbols';
 
 const {
   Object: EmberObject,
@@ -15,14 +14,14 @@ const {
   typeOf
 } = Ember;
 
-export default EmberObject.extend({
+const Pipeline = EmberObject.extend({
   /**
    * Internal property to check if object is a pipeline instance.
    *
    * @private
    * @property {Boolean}
    */
-  [IS_PIPELINE_SYMBOL]: true,
+  [IS_PIPELINE]: true,
 
   /**
    * Context object.
@@ -50,7 +49,7 @@ export default EmberObject.extend({
     this._super(...arguments);
     assert('[ember-pipeline] Must have context object to create a new pipeline', isPresent(this.context) && isObject(this.context));
     runInDebug(() => this._validateSteps(this.steps));
-    this.createPipeline();
+    this.createPipeline(this.steps);
   },
 
   /**
@@ -59,12 +58,9 @@ export default EmberObject.extend({
    * @public
    * @returns {Function}
    */
-  createPipeline() {
+  createPipeline(steps = []) {
     let context = get(this, 'context');
-    let pipeline = pipe(this.steps.map((s) => {
-      let fn = s.fn || get(context, s.fnName).bind(context);
-      return pureAssign(s, { context, fn });
-    }));
+    let pipeline = pipe(steps.map((s) => s.bindTo(context)));
     return set(this, '_pipelineFn', pipeline);
   },
 
@@ -77,7 +73,7 @@ export default EmberObject.extend({
    */
   perform(...args) {
     let v = get(this, '_pipelineFn')(...args);
-    if (v && v[IS_CANCELLED_SYMBOL] && isPresent(this.cancelHandler)) {
+    if (v && v[IS_CANCELLED] && isPresent(this.cancelHandler)) {
       return this.cancelHandler(v);
     }
     return v;
@@ -92,6 +88,10 @@ export default EmberObject.extend({
    * @returns {Pipeline}
    */
   onCancel(handlerFn) {
+    assert(
+      '[ember-pipeline] onCancel handler must be a function',
+      typeOf(handlerFn) === 'function'
+    );
     this.cancelHandler = handlerFn;
     return this;
   },
@@ -105,14 +105,27 @@ export default EmberObject.extend({
    */
   _validateSteps(steps = []) {
     steps.forEach((s) => {
-      if (s.fn) {
-        assert(`[ember-pipeline] ${s.fn} is not a function`,
-          typeOf(s.fn) === 'function');
-      }
-      if (s.fnName) {
-        assert(`[ember-pipeline] ${s.fnName} is not a function`,
-          typeOf(get(this.context, s.fnName)) === 'function');
-      }
+      assert(
+        '[ember-pipeline] A pipeline only accepts steps that are created with the `step` function',
+        s instanceof Step
+      );
     });
   }
 });
+
+export default Pipeline;
+
+/**
+ * Creates a new pipeline instance for a given context object and a sequential
+ * series of steps.
+ *
+ * @export
+ * @param {Object} context
+ * @param {Array<object>} [steps=[]]
+ * @returns {Pipeline}
+ */
+export function pipeline(context, steps = []) {
+  assert('[ember-pipeline] Must have context object to create a new pipeline', isPresent(context)
+    && isObject(context));
+  return Pipeline.create({ context, steps });
+}
