@@ -1,5 +1,5 @@
 import Ember from 'ember';
-import reduce from 'ember-pipeline/utils/reduce';
+import reduce from 'ember-pipeline/-reduce';
 import isPromise from 'ember-pipeline/utils/is-promise';
 
 const { typeOf } = Ember;
@@ -18,9 +18,16 @@ const invokeFunction = (acc, fn) => isPromise(acc)
   ? acc.then(fn)
   : fn(acc);
 
-export default function pipe(fns = []) {
+/**
+ * Pipe that also accepts `Step`s as functions.
+ *
+ * @export
+ * @param {Array<function|Step>} [steps=[]]
+ * @returns
+ */
+export default function pipe(steps = []) {
   return (...args) =>
-    reduce(fns, (acc, curr, idx) => {
+    reduce(steps, (acc, curr, idx) => {
       let fn = makeFn(curr);
       return idx === 0
         ? fn(...args)

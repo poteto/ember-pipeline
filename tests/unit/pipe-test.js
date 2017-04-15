@@ -1,5 +1,5 @@
 import Ember from 'ember';
-import pipe from 'ember-pipeline/utils/pipe';
+import pipe from 'ember-pipeline/-pipe';
 import { module, test } from 'qunit';
 import sinon from 'sinon';
 
@@ -8,7 +8,7 @@ const {
 } = Ember;
 let sandbox;
 
-module('Unit | Helper | pipe', {
+module('Unit | Main | pipe', {
   beforeEach() {
     sandbox = sinon.sandbox.create();
   },
