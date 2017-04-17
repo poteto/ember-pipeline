@@ -146,8 +146,8 @@ test('#pipeline keeps track of steps performed', function(assert) {
     step2(v) {
       return 2 + v;
     },
-    step3() {
-      return CANCEL();
+    step3(v) {
+      return v < 10 ? CANCEL() : v;
     }
   };
   let pipelineInstance = pipeline(obj, [
@@ -158,6 +158,10 @@ test('#pipeline keeps track of steps performed', function(assert) {
   pipelineInstance.perform(2);
   assert.deepEqual(pipelineInstance.get('successfulSteps.length'), 2);
   assert.deepEqual(pipelineInstance.get('cancelledSteps.length'), 1);
+
+  pipelineInstance.perform(10);
+  assert.deepEqual(pipelineInstance.get('successfulSteps.length'), 3);
+  assert.deepEqual(pipelineInstance.get('cancelledSteps.length'), 0);
 });
 
 test('#step accepts function or string', function(assert) {

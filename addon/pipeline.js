@@ -55,13 +55,13 @@ const Pipeline = EmberObject.extend({
    */
   _pipelineFn: undefined,
 
-  successfulSteps: computed('isPerformed', function() {
+  successfulSteps: computed('isPerformed', 'steps.@each.isPerformed', function() {
     return get(this, 'isPerformed')
       ? emberArray(get(this, 'steps')).filter((s) => s.isPerformed)
       : [];
   }).readOnly(),
 
-  cancelledSteps: computed('isPerformed', function() {
+  cancelledSteps: computed('isPerformed', 'steps.@each.isPerformed', function() {
     return get(this, 'isPerformed')
       ? emberArray(get(this, 'steps')).reject((s) => s.isPerformed)
       : [];

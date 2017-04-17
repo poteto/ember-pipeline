@@ -3,7 +3,8 @@ import Ember from 'ember';
 const {
   assert,
   get,
-  typeOf
+  typeOf,
+  set
 } = Ember;
 
 /**
@@ -35,9 +36,9 @@ export default class Step {
       `[ember-pipeline] \`${fn}\` is not a function or method on ${context.toString()}`,
       typeOf(fn) === 'function'
     )
-    this.fn = fn.bind(context);
-    this.context = context;
-    this.isBound = true;
+    set(this, 'fn', fn.bind(context));
+    set(this, 'context', context);
+    set(this, 'isBound', true);
     return this;
   }
 
@@ -49,7 +50,7 @@ export default class Step {
   }
 
   markPerformed(val) {
-    return this.isPerformed = !!val;
+    return set(this, 'isPerformed', !!val);
   }
 }
 
