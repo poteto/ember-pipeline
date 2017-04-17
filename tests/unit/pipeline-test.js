@@ -162,6 +162,10 @@ test('#pipeline keeps track of steps performed', function(assert) {
   pipelineInstance.perform(10);
   assert.deepEqual(pipelineInstance.get('successfulSteps.length'), 3);
   assert.deepEqual(pipelineInstance.get('cancelledSteps.length'), 0);
+
+  pipelineInstance.perform(2);
+  assert.deepEqual(pipelineInstance.get('successfulSteps.length'), 2);
+  assert.deepEqual(pipelineInstance.get('cancelledSteps.length'), 1);
 });
 
 test('#step accepts function or string', function(assert) {
