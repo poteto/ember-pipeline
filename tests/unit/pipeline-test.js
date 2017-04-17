@@ -7,7 +7,7 @@ import { module, test } from 'qunit';
 let sandbox;
 const {
   Object: EmberObject,
-  RSVP: { resolve },
+  RSVP: { resolve, all },
   run } = Ember;
 const dummy = {
   makeCalculationPipeline() {
@@ -139,33 +139,43 @@ test('#pipeline handles steps that are functions', function(assert) {
 });
 
 test('#pipeline keeps track of steps performed', function(assert) {
+  let done = assert.async();
   let obj = {
     step1(v) {
-      return 1 + v;
+      return v === 1 ? CANCEL() : v;
     },
     step2(v) {
-      return 2 + v;
+      return v === 2 ? CANCEL() : v;
     },
     step3(v) {
-      return v < 10 ? CANCEL() : v;
+      return v === 3 ? CANCEL() : resolve(v);
+    },
+    step4(v) {
+      return v;
     }
   };
-  let pipelineInstance = pipeline(obj, [
-    step('step1'),
-    step('step2'),
-    step('step3')
-  ]);
-  pipelineInstance.perform(2);
-  assert.deepEqual(pipelineInstance.get('successfulSteps.length'), 2);
-  assert.deepEqual(pipelineInstance.get('cancelledSteps.length'), 1);
 
-  pipelineInstance.perform(10);
-  assert.deepEqual(pipelineInstance.get('successfulSteps.length'), 3);
-  assert.deepEqual(pipelineInstance.get('cancelledSteps.length'), 0);
+  let testData = [
+    { input: 2, successful: 1, cancelled: 3 },
+    { input: 3, successful: 2, cancelled: 2 },
+    { input: 1, successful: 0, cancelled: 4 },
+    { input: 4, successful: 4, cancelled: 0 }
+  ];
 
-  pipelineInstance.perform(2);
-  assert.deepEqual(pipelineInstance.get('successfulSteps.length'), 2);
-  assert.deepEqual(pipelineInstance.get('cancelledSteps.length'), 1);
+  all(
+    testData.map(({ input, successful, cancelled }, idx) => {
+      let pipelineInstance = pipeline(obj, [
+        step('step1'),
+        step('step2'),
+        step('step3'),
+        step('step4')
+      ]);
+      return resolve(pipelineInstance.perform(input)).then(() => {
+        assert.deepEqual(pipelineInstance.get('successfulSteps.length'), successful, `success, iter #${idx + 1}`);
+        assert.deepEqual(pipelineInstance.get('cancelledSteps.length'), cancelled, `cancel, iter #${idx + 1}`);
+      });
+    })
+  ).finally(done);
 });
 
 test('#step accepts function or string', function(assert) {
