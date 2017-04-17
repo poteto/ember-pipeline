@@ -138,6 +138,28 @@ test('#pipeline handles steps that are functions', function(assert) {
   assert.equal(pipelineInstance.perform('Bar'), 'FooBarBazQux');
 });
 
+test('#pipeline keeps track of steps performed', function(assert) {
+  let obj = {
+    step1(v) {
+      return 1 + v;
+    },
+    step2(v) {
+      return 2 + v;
+    },
+    step3() {
+      return CANCEL();
+    }
+  };
+  let pipelineInstance = pipeline(obj, [
+    step('step1'),
+    step('step2'),
+    step('step3')
+  ]);
+  pipelineInstance.perform(2);
+  assert.deepEqual(pipelineInstance.get('successfulSteps.length'), 2);
+  assert.deepEqual(pipelineInstance.get('cancelledSteps.length'), 1);
+});
+
 test('#step accepts function or string', function(assert) {
   assert.equal(step(x => x * x).fn(2), 4);
   assert.equal(step('foo').fnName, 'foo');

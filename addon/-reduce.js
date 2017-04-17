@@ -1,10 +1,14 @@
 import Ember from 'ember';
-import Step from 'ember-pipeline/step';
 import Cancellation from 'ember-pipeline/cancellation';
+import Step from 'ember-pipeline/step';
 import { CANCEL_REASON } from 'ember-pipeline/-symbols';
 import isDestroyed from 'ember-pipeline/utils/is-destroyed';
 
 const { get } = Ember;
+
+function markPerformed(step) {
+  return step instanceof Step ? step.markPerformed(true) : false;
+}
 
 /**
  * Short circuitable `reduce`.
@@ -18,8 +22,7 @@ const { get } = Ember;
 export default function reduce(values, fn, acc) {
   for (let i = 0; i < values.length; i++) {
     let step = values[i];
-    let stepFn = step instanceof Step ? step.isBound && step.fn : step;
-    let val = fn(acc, stepFn, i, values);
+    let val = fn(acc, step, i, values);
     let context = get(step, 'context');
     // find better way to cancel
     if (isDestroyed(context)) {
@@ -38,6 +41,7 @@ export default function reduce(values, fn, acc) {
       });
       break;
     }
+    markPerformed(step);
     acc = val;
   }
   return acc;

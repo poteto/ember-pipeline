@@ -1,15 +1,16 @@
 import Ember from 'ember';
 import reduce from 'ember-pipeline/-reduce';
 import isPromise from 'ember-pipeline/utils/is-promise';
+import Step from 'ember-pipeline/step';
 
 const { typeOf } = Ember;
 
 const applyFn = (maybeFn, ...args) => {
+  if (maybeFn instanceof Step) {
+    return maybeFn.perform(...args);
+  }
   if (typeOf(maybeFn) === 'function') {
     return maybeFn(...args);
-  }
-  if (maybeFn && typeOf(maybeFn.fn) === 'function') {
-    return maybeFn.fn(...args);
   }
   return maybeFn;
 };

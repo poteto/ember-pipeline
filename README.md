@@ -20,7 +20,7 @@ const { computed, get } = Ember;
 
 export default Component.extend({
   fetchStoreLocations: computed(function() {
-    return pipeline([
+    return pipeline(this, [
       step('requestGeolocation'),
       step('fetchStoresInProximity'),
       step('sortStoresByDistance'),
@@ -134,9 +134,19 @@ export default Component.extend({
 });
 ```
 
+After a pipeline has been performed, you can get derived state:
+
+```js
+get(this, 'myPipeline').perform(1, 2, 3);
+get(this, 'myPipeline.successfulSteps.length'); // 2
+get(this, 'myPipeline.cancelledSteps.length'); // 1
+get(this, 'myPipeline.successfulSteps'); // array of successful Steps
+get(this, 'myPipeline.cancelledSteps'); // array of cancelled Steps
+```
+
 ## API
 
-Detailed API coming soon!
+Because features are still in flux, detailed API docs are coming soon!
 
 ## Roadmap
 
