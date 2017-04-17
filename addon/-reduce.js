@@ -7,7 +7,7 @@ import isDestroyed from 'ember-pipeline/utils/is-destroyed';
 const { get } = Ember;
 
 function markPerformed(step) {
-  return step instanceof Step ? step.markPerformed(true) : false;
+  return step instanceof Step ? step.markPerformed() : false;
 }
 
 /**
