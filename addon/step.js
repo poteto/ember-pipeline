@@ -20,6 +20,7 @@ export default class Step {
     );
     this.opts = opts;
     this.isBound = false;
+    this.isPerformed = false;
     if (typeOf(fn) === 'function') {
       this.fn = fn;
     }
@@ -38,6 +39,17 @@ export default class Step {
     this.context = context;
     this.isBound = true;
     return this;
+  }
+
+  perform(...args) {
+    if (!this.isBound) {
+      return;
+    }
+    return this.fn(...args);
+  }
+
+  markPerformed(val) {
+    return this.isPerformed = !!val;
   }
 }
 

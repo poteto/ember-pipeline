@@ -5,7 +5,9 @@ import { IS_CANCELLED, IS_PIPELINE } from 'ember-pipeline/-symbols';
 import isObject from 'ember-pipeline/utils/is-object';
 
 const {
+  A: emberArray,
   Object: EmberObject,
+  computed,
   assert,
   get,
   set,
@@ -37,13 +39,33 @@ const Pipeline = EmberObject.extend({
    * @public
    * @property {Array}
    */
-  steps: [],
+  steps: undefined,
+
+  /**
+   * Has this pipeline been performed?
+   *
+   * @public
+   * @property {Boolean}
+   */
+  isPerformed: false,
 
   /**
    * @private
    * @property {Function}
    */
   _pipelineFn: undefined,
+
+  successfulSteps: computed('isPerformed', function() {
+    return get(this, 'isPerformed')
+      ? emberArray(get(this, 'steps')).filter((s) => s.isPerformed)
+      : [];
+  }).readOnly(),
+
+  cancelledSteps: computed('isPerformed', function() {
+    return get(this, 'isPerformed')
+      ? emberArray(get(this, 'steps')).reject((s) => s.isPerformed)
+      : [];
+  }).readOnly(),
 
   init() {
     this._super(...arguments);
@@ -60,7 +82,8 @@ const Pipeline = EmberObject.extend({
    */
   createPipeline(steps = []) {
     let context = get(this, 'context');
-    let pipeline = pipe(steps.map((s) => s.bindTo(context)));
+    let boundSteps = set(this, 'steps', steps.map((s) => s.bindTo(context)));
+    let pipeline = pipe(boundSteps);
     return set(this, '_pipelineFn', pipeline);
   },
 
@@ -73,6 +96,7 @@ const Pipeline = EmberObject.extend({
    */
   perform(...args) {
     let v = get(this, '_pipelineFn')(...args);
+    set(this, 'isPerformed', true);
     if (v && v[IS_CANCELLED] && isPresent(this.cancelHandler)) {
       return this.cancelHandler(v);
     }
