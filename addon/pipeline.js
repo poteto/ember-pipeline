@@ -42,6 +42,14 @@ const Pipeline = EmberObject.extend({
   steps: undefined,
 
   /**
+   * Result of the pipeline after execution.
+   *
+   * @public
+   * @property {Any}
+   */
+  result: undefined,
+
+  /**
    * Has this pipeline been performed?
    *
    * @public
@@ -95,12 +103,19 @@ const Pipeline = EmberObject.extend({
    * @returns {any}
    */
   perform(...args) {
-    let v = get(this, '_pipelineFn')(...args);
-    set(this, 'isPerformed', true);
+    let v = this._executePipeline(...args);
     if (v && v[IS_CANCELLED] && isPresent(this.cancelHandler)) {
       return this.cancelHandler(v);
     }
     return v;
+  },
+
+  _executePipeline(...args) {
+    this._unmarkPerformed();
+    set(this, 'isPerformed', false);
+    let result = get(this, '_pipelineFn')(...args);
+    set(this, 'isPerformed', true);
+    return set(this, 'result', result);
   },
 
   /**
@@ -134,6 +149,16 @@ const Pipeline = EmberObject.extend({
         s instanceof Step
       );
     });
+  },
+
+  /**
+   * Unmark all steps as performed.
+   *
+   * @private
+   * @returns {Void}
+   */
+  _unmarkPerformed() {
+    get(this, 'steps').forEach((s) => s.unmarkPerformed());
   }
 });
 

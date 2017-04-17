@@ -43,7 +43,6 @@ export default class Step {
   }
 
   perform(...args) {
-    set(this, 'isPerformed', false); // step needs to be manually marked as performed
     if (!this.isBound) {
       return;
     }
@@ -52,6 +51,10 @@ export default class Step {
 
   markPerformed() {
     return set(this, 'isPerformed', true);
+  }
+
+  unmarkPerformed() {
+    return set(this, 'isPerformed', false);
   }
 }
 
