@@ -14,7 +14,8 @@ module.exports = {
       "--disable-gpu",
       "--remote-debugging-port=9222",
       "--remote-debugging-address=0.0.0.0",
-      "--no-sandbox"
+      "--no-sandbox",
+      "--user-data-dir=/tmp"
     ]
   }
 };
